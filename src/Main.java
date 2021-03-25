@@ -64,47 +64,128 @@ class Main {
                 Element element = (Element) node;
 
                 Process process = new Process(
-                        element.getAttribute("pid"),
-                        element.getElementsByTagName("arrivaltime").item(0).getTextContent(),
-                        element.getElementsByTagName("servicetime").item(0).getTextContent()
+                        Integer.parseInt(element.getElementsByTagName("pid").item(0).getTextContent()),
+                        Integer.parseInt(element.getElementsByTagName("arrivaltime").item(0).getTextContent()),
+                        Integer.parseInt(element.getElementsByTagName("servicetime").item(0).getTextContent())
                 );
                 processes.add(process);
             }
         }
 
-        // at this point we have a list of processes
+        // lists of our accessible data
+        List<Integer> pids = new ArrayList<>();
+        List<Integer> arrivaltimes = new ArrayList<>();
+        List<Integer> servicetimes = new ArrayList<>();
+
+        int amountProcesses = processes.size();
+        System.out.println(processes.size());
 
         // print out all the processes
         for (Process process : processes) {
-            System.out.println("pid: " + process.getPid());
-            System.out.println("arrivaltime: " + process.getArrivaltime());
-            System.out.println("servicetime: " + process.getServicetime());
+           pids.add(process.getPid());
+           arrivaltimes.add(process.getArrivaltime());
+           servicetimes.add(process.getServicetime());
         }
+
+        // list of components of all processes, will be used in our algorithms
+        System.out.println(pids);
+        System.out.println(arrivaltimes);
+        System.out.println(servicetimes);
+
+        // 01. FCFS
+        FCFS.findAverageTAT(processes, amountProcesses, arrivaltimes, servicetimes );
+        // FCFS.gemiddeldeTAT :)
+        // FCFS.gemiddeldeWachttijd :)
     }
 
     public static class Process {
 
-        private String pid;
-        private String arrivaltime;
-        private String servicetime;
+        private int pid;
+        private int arrivaltime;
+        private int servicetime;
 
-        public Process(String pid, String arrivaltime, String servicetime) {
+        public Process(int pid, int arrivaltime, int servicetime) {
             this.pid = pid;
             this.arrivaltime = arrivaltime;
             this.servicetime = servicetime;
         }
 
-        public String getPid() {
+        public int getPid() {
             return pid;
         }
 
-        public String getArrivaltime() {
+        public int getArrivaltime() {
             return arrivaltime;
         }
 
-        public String getServicetime() {
+        public int getServicetime() {
             return servicetime;
         }
+    }
+
+
+}
+
+// first come first serve
+class FCFS {
+    // Function to find the waiting time for all
+    // processes
+    static void findWaitingTime(List<Main.Process> processes, int amountProcesses,
+                                List<Integer> servictimes, int[] waitingtimes) {
+
+        // waiting time for first process is 0
+        waitingtimes[0] = 0;
+
+        // calculating waiting time
+        for (int i = 1; i < amountProcesses; i++) {
+            waitingtimes[i] = servictimes.get(i-1) + waitingtimes[i - 1];
+        }
+    }
+
+    // Function to calculate turn around time
+    static void findTurnAroundTime(List<Main.Process> processes, int amountProcesses,
+                                   List<Integer> servictimes, int[] waitingtimes, int[] TATs) {
+
+        // calculating turnaround time by adding
+        // bt[i] + wt[i]
+        for (int i = 0; i < amountProcesses; i++) {
+            TATs[i] = servictimes.get(i) + waitingtimes[i];
+        }
+    }
+
+    //Function to calculate average time
+    static void findAverageTAT(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes) {
+        int waitingtimes[] = new int[amountProcesses];
+        int TATs[] = new int[amountProcesses];
+        int totalWaitingtime = 0;
+        int totalTAT = 0;
+
+        //Function to find waiting time of all processes
+        findWaitingTime(processes, amountProcesses, arrivaltimes, waitingtimes);
+
+        //Function to find turn around time for all processes
+        findTurnAroundTime(processes, amountProcesses, arrivaltimes, waitingtimes, TATs);
+
+        //Display processes along with all details
+        System.out.printf("Processes Burst time Waiting"
+                +" time Turn around time\n");
+
+        // Calculate total waiting time and total turn
+        // around time
+        for (int i = 0; i < amountProcesses; i++) {
+            totalWaitingtime = totalWaitingtime + waitingtimes[i];
+            totalTAT = totalTAT + TATs[i];
+            System.out.printf("%d ", (i + 1));
+            System.out.printf("%d ", servicetimes.get(i));
+            System.out.printf("%d", waitingtimes[i]);
+            System.out.printf("%d\n", TATs[i]);
+        }
+
+        float s = (float)totalWaitingtime /(float) amountProcesses;
+        int t = totalWaitingtime / amountProcesses;
+        System.out.printf("Average waiting time = %f", s);
+        System.out.printf("\n");
+        System.out.printf("Average turn around time = %d ", t);
     }
 }
 
