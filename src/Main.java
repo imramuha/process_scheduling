@@ -46,7 +46,7 @@ import org.w3c.dom.NodeList;
 class Main {
     public static void main(String[] args) throws Exception {
 
-        File xmlFile = new File("processen20000.xml");
+        File xmlFile = new File("processen3.xml");
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         org.w3c.dom.Document document = documentBuilder.parse(xmlFile);
@@ -93,7 +93,7 @@ class Main {
         System.out.println(servicetimes);
 
         // 01. FCFS
-        FCFS.findAverageTAT(processes, amountProcesses, arrivaltimes, servicetimes );
+        FCFS.run(processes, amountProcesses, arrivaltimes, servicetimes );
         // FCFS.gemiddeldeTAT :)
         // FCFS.gemiddeldeWachttijd :)
     }
@@ -130,62 +130,84 @@ class Main {
 class FCFS {
     // Function to find the waiting time for all
     // processes
-    static void findWaitingTime(List<Main.Process> processes, int amountProcesses,
-                                List<Integer> servictimes, int[] waitingtimes) {
+    static void findWaitingtime(int amountProcesses, List<Integer> servicetimes, List<Integer> arrivaltimes, int[] waitingtimes) {
 
-        // waiting time for first process is 0
+
+        int[] currentServicetime = new int[amountProcesses];
+
+        // starts at 0
         waitingtimes[0] = 0;
+        currentServicetime[0] = 0;
 
-        // calculating waiting time
-        for (int i = 1; i < amountProcesses; i++) {
-            waitingtimes[i] = servictimes.get(i-1) + waitingtimes[i - 1];
+        // calculating waiting time and save in a list
+        for(int i = 1; i < amountProcesses; i++) {
+            // Add burst time of previous processes
+            currentServicetime[i] = currentServicetime[i-1] + servicetimes.get(i-1);
+
+            // Find waiting time for current process =
+            // sum - at[i]
+            waitingtimes[i] = currentServicetime[i] - arrivaltimes.get(i);
+
+            // If waiting time for a process is in negative
+            // that means it is already in the ready queue
+            // before CPU becomes idle so its waiting time is 0
+            if (waitingtimes[i] < 0) {
+                waitingtimes[i] = 0;
+            }
         }
     }
 
     // Function to calculate turn around time
-    static void findTurnAroundTime(List<Main.Process> processes, int amountProcesses,
-                                   List<Integer> servictimes, int[] waitingtimes, int[] TATs) {
+    static void findTurnaroundtime(int amountProcesses, List<Integer> servicetimes, int[] waitingtimes, int[] tats) {
 
-        // calculating turnaround time by adding
-        // bt[i] + wt[i]
-        for (int i = 0; i < amountProcesses; i++) {
-            TATs[i] = servictimes.get(i) + waitingtimes[i];
+        // Calculating turnaround time by adding servicetimes and waitingtimes
+        for (int i = 0; i < amountProcesses ; i++) {
+            System.out.println(servicetimes.get(i));
+            tats[i] = servicetimes.get(i) + waitingtimes[i];
         }
     }
 
     //Function to calculate average time
-    static void findAverageTAT(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes) {
+    static void run(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes) {
         int waitingtimes[] = new int[amountProcesses];
-        int TATs[] = new int[amountProcesses];
+        int[] tats = new int[amountProcesses];
         int totalWaitingtime = 0;
-        int totalTAT = 0;
+        int totalTurnaroundtime = 0;
+        float totalNormalizedTurnaroundtime = 0;
 
         //Function to find waiting time of all processes
-        findWaitingTime(processes, amountProcesses, arrivaltimes, waitingtimes);
+        findWaitingtime(amountProcesses, servicetimes, arrivaltimes, waitingtimes);
 
         //Function to find turn around time for all processes
-        findTurnAroundTime(processes, amountProcesses, arrivaltimes, waitingtimes, TATs);
+        findTurnaroundtime(amountProcesses, servicetimes, waitingtimes, tats);
 
         //Display processes along with all details
-        System.out.printf("Processes Burst time Waiting"
-                +" time Turn around time\n");
+        System.out.printf("processes -- arrivaltime -- servicetime --  waitingtime -- turnaroundtime -- starttime -- endtime \n");
 
         // Calculate total waiting time and total turn
         // around time
         for (int i = 0; i < amountProcesses; i++) {
-            totalWaitingtime = totalWaitingtime + waitingtimes[i];
-            totalTAT = totalTAT + TATs[i];
-            System.out.printf("%d ", (i + 1));
-            System.out.printf("%d ", servicetimes.get(i));
-            System.out.printf("%d", waitingtimes[i]);
-            System.out.printf("%d\n", TATs[i]);
+
+            // global parameters
+            totalWaitingtime = ( totalWaitingtime + waitingtimes[i]);
+            totalTurnaroundtime = totalTurnaroundtime + tats[i];
+            totalNormalizedTurnaroundtime = totalNormalizedTurnaroundtime + ( (float) tats[i] / (float) servicetimes.get(i));
+
+            // per process
+            System.out.printf("  %d            ", (i + 1));
+            System.out.printf("  %d            ", arrivaltimes.get(i));
+            System.out.printf("  %d            ", servicetimes.get(i));
+            System.out.printf("  %d            ", waitingtimes[i]);
+            System.out.printf("  %d \n", tats[i]);
         }
 
-        float s = (float)totalWaitingtime /(float) amountProcesses;
-        int t = totalWaitingtime / amountProcesses;
-        System.out.printf("Average waiting time = %f", s);
-        System.out.printf("\n");
-        System.out.printf("Average turn around time = %d ", t);
+        float averageTurnaroundtime = (float) totalTurnaroundtime / (float) amountProcesses;
+        float averageNormalizedTurnaroundtime =  totalNormalizedTurnaroundtime /  (float) amountProcesses;
+        float averageWaitingtime =   (float) totalWaitingtime /  (float) amountProcesses;
+
+        System.out.println("Average TAT:" +  averageTurnaroundtime);
+        System.out.println("Average Normalized TAT:" + averageNormalizedTurnaroundtime);
+        System.out.println("Average Waitingtime:" + averageWaitingtime);
     }
 }
 
