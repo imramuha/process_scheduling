@@ -158,33 +158,45 @@ class FCFS {
     }
 
     // Function to calculate turn around time
-    static void findTurnaroundtime(int amountProcesses, List<Integer> servicetimes, int[] waitingtimes, int[] tats) {
+    static void findTurnaroundtime(int amountProcesses, List<Integer> servicetimes, int[] waitingtimes, int[] turnaroundtimes) {
 
         // Calculating turnaround time by adding servicetimes and waitingtimes
         for (int i = 0; i < amountProcesses ; i++) {
-            tats[i] = servicetimes.get(i) + waitingtimes[i];
+            turnaroundtimes[i] = servicetimes.get(i) + waitingtimes[i];
+        }
+    }
+
+    // Function to calculate normalized
+    static void findNormalizedTurnaroundtime(int amountProcesses, List<Integer> servicetimes,  int[] turnaroundtimes, float[] normalizedTurnaroundtimes) {
+
+        // Calculating normalized turnaround time by diving turnaroudtimes with servucetimes
+        for (int i = 0; i < amountProcesses ; i++) {
+            normalizedTurnaroundtimes[i] = (float) turnaroundtimes[i] / (float) servicetimes.get(i);
         }
     }
 
     //Function to calculate average time
     static void run(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes) {
         int waitingtimes[] = new int[amountProcesses];
-        int[] tats = new int[amountProcesses];
+        int[] turnaroundtimes = new int[amountProcesses];
+        float[] normalizedTurnaroundtimes = new float[amountProcesses];
         int totalWaitingtime = 0;
         int totalTurnaroundtime = 0;
         float totalNormalizedTurnaroundtime = 0;
-        int starttime = 0;
+        int starttime;
         int endtime = 0;
-        // + / - some data :) !!
 
-        //Function to find waiting time of all processes
+        // Function to find waiting time of all processes
         findWaitingtime(amountProcesses, servicetimes, arrivaltimes, waitingtimes);
 
-        //Function to find turn around time for all processes
-        findTurnaroundtime(amountProcesses, servicetimes, waitingtimes, tats);
+        // Function to find turn around time for all processes
+        findTurnaroundtime(amountProcesses, servicetimes, waitingtimes, turnaroundtimes);
 
-        //Display processes along with all details
-        System.out.printf("processes -- arrivaltime -- servicetime --  waitingtime -- turnaroundtime -- starttime -- endtime \n");
+        // Function to find normalized turn around time
+        findNormalizedTurnaroundtime(amountProcesses, servicetimes, turnaroundtimes, normalizedTurnaroundtimes);
+
+        // Display processes along with all details
+        System.out.printf("processes -- arrivaltime -- servicetime --  waitingtime -- turnaroundtime -- normalized tunraroundtime --  starttime -- endtime \n");
 
         // Calculate total waiting time and total turn
         // around time
@@ -192,8 +204,8 @@ class FCFS {
 
             // global parameters
             totalWaitingtime = ( totalWaitingtime + waitingtimes[i]);
-            totalTurnaroundtime = totalTurnaroundtime + tats[i];
-            totalNormalizedTurnaroundtime = totalNormalizedTurnaroundtime + ( (float) tats[i] / (float) servicetimes.get(i));
+            totalTurnaroundtime = totalTurnaroundtime + turnaroundtimes[i];
+            totalNormalizedTurnaroundtime = totalNormalizedTurnaroundtime + ( (float) turnaroundtimes[i] / (float) servicetimes.get(i));
 
             starttime = 0;
 
@@ -204,24 +216,23 @@ class FCFS {
             endtime = endtime + servicetimes.get(i);
 
             // per process
-            System.out.printf("  %d            ", (i + 1));
-            System.out.printf("  %d            ", arrivaltimes.get(i));
-            System.out.printf("  %d            ", servicetimes.get(i));
-            System.out.printf("  %d            ", waitingtimes[i]);
-            System.out.printf("  %d            ", tats[i]);
-            System.out.printf("  %d            ", starttime);
-            System.out.printf("  %d \n", endtime);
+            System.out.printf("     %-12s", (i + 1));
+            System.out.printf(" %-13s", arrivaltimes.get(i));
+            System.out.printf(" %-15s", servicetimes.get(i));
+            System.out.printf(" %-15s", waitingtimes[i]);
+            System.out.printf(" %-22s", turnaroundtimes[i]);
+            System.out.printf("%.2f                     ", normalizedTurnaroundtimes[i]);
+            System.out.printf("%-10s", starttime);
+            System.out.printf(" %-12s%n", endtime);
         }
-
-        System.out.println(totalTurnaroundtime);
 
         float averageTurnaroundtime = (float) totalTurnaroundtime / (float) amountProcesses;
         float averageNormalizedTurnaroundtime =  totalNormalizedTurnaroundtime /  (float) amountProcesses;
         float averageWaitingtime =   (float) totalWaitingtime /  (float) amountProcesses;
 
-        System.out.println("Average TAT:" +  averageTurnaroundtime);
-        System.out.println("Average Normalized TAT:" + averageNormalizedTurnaroundtime);
-        System.out.println("Average Waitingtime:" + averageWaitingtime);
+        System.out.printf("Average TAT: %.2f %n", averageTurnaroundtime);
+        System.out.printf("Average Normalized TAT: %.2f %n",averageNormalizedTurnaroundtime);
+        System.out.printf("Average Waitingtime: %.2f %n", averageWaitingtime);
     }
 }
 
