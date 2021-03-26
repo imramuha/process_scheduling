@@ -46,7 +46,7 @@ import org.w3c.dom.NodeList;
 class Main {
     public static void main(String[] args) throws Exception {
 
-        File xmlFile = new File("processen3.xml");
+        File xmlFile = new File("processen5.xml");
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         org.w3c.dom.Document document = documentBuilder.parse(xmlFile);
@@ -162,7 +162,6 @@ class FCFS {
 
         // Calculating turnaround time by adding servicetimes and waitingtimes
         for (int i = 0; i < amountProcesses ; i++) {
-            System.out.println(servicetimes.get(i));
             tats[i] = servicetimes.get(i) + waitingtimes[i];
         }
     }
@@ -174,6 +173,9 @@ class FCFS {
         int totalWaitingtime = 0;
         int totalTurnaroundtime = 0;
         float totalNormalizedTurnaroundtime = 0;
+        int starttime = 0;
+        int endtime = 0;
+        // + / - some data :) !!
 
         //Function to find waiting time of all processes
         findWaitingtime(amountProcesses, servicetimes, arrivaltimes, waitingtimes);
@@ -193,13 +195,25 @@ class FCFS {
             totalTurnaroundtime = totalTurnaroundtime + tats[i];
             totalNormalizedTurnaroundtime = totalNormalizedTurnaroundtime + ( (float) tats[i] / (float) servicetimes.get(i));
 
+            starttime = 0;
+
+            if(i != 0) {
+                starttime = endtime + 1;
+            }
+
+            endtime = endtime + servicetimes.get(i);
+
             // per process
             System.out.printf("  %d            ", (i + 1));
             System.out.printf("  %d            ", arrivaltimes.get(i));
             System.out.printf("  %d            ", servicetimes.get(i));
             System.out.printf("  %d            ", waitingtimes[i]);
-            System.out.printf("  %d \n", tats[i]);
+            System.out.printf("  %d            ", tats[i]);
+            System.out.printf("  %d            ", starttime);
+            System.out.printf("  %d \n", endtime);
         }
+
+        System.out.println(totalTurnaroundtime);
 
         float averageTurnaroundtime = (float) totalTurnaroundtime / (float) amountProcesses;
         float averageNormalizedTurnaroundtime =  totalNormalizedTurnaroundtime /  (float) amountProcesses;
