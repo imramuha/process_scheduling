@@ -1,10 +1,22 @@
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+// XML
+import javax.sound.sampled.Line;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -46,7 +58,7 @@ import org.w3c.dom.NodeList;
 class Main {
     public static void main(String[] args) throws Exception {
 
-        File xmlFile = new File("processen5.xml");
+        File xmlFile = new File("processen20000.xml");
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         org.w3c.dom.Document document = documentBuilder.parse(xmlFile);
@@ -72,10 +84,13 @@ class Main {
             }
         }
 
+
+
         // lists of our accessible data
-        List<Integer> pids = new ArrayList<>();
-        List<Integer> arrivaltimes = new ArrayList<>();
-        List<Integer> servicetimes = new ArrayList<>();
+        List<Integer> pids = new ArrayList<Integer>();
+        List<Integer> arrivaltimes = new ArrayList<Integer>();
+        List<Integer> servicetimes = new ArrayList<Integer>();
+        List<Integer> servicetimePercentiles = new ArrayList<Integer>();
 
         int amountProcesses = processes.size();
         System.out.println(processes.size());
@@ -93,9 +108,17 @@ class Main {
         System.out.println(servicetimes);
 
         // 01. FCFS
-        FCFS.run(processes, amountProcesses, arrivaltimes, servicetimes );
+        FCFS.run(processes, amountProcesses, arrivaltimes, servicetimes, servicetimePercentiles);
+
+
         // FCFS.gemiddeldeTAT :)
         // FCFS.gemiddeldeWachttijd :)
+
+        LineChart_AWT chart = new LineChart_AWT( "NTAT vs ST","Normalized Turnaround time vs Service Time", servicetimes);
+
+        chart.pack( );
+        RefineryUtilities.centerFrameOnScreen( chart );
+        chart.setVisible( true );
     }
 
     public static class Process {
@@ -175,8 +198,27 @@ class FCFS {
         }
     }
 
+    // Function to calculate percentile
+    static void stPercentile20k(List<Integer> servicetimes, List<Integer>percentile) {
+
+        int counter = 0;
+
+        // Calculating percentile for 20k
+        for (int i = 0; i < 100 ; i++) {
+            int tempPercentile = 0;
+
+            for(int j = 0; j < 200; j++) {
+
+                tempPercentile= tempPercentile + servicetimes.get(counter);
+
+                counter++;
+            }
+            percentile.add((tempPercentile / 200));
+        }
+    }
+
     //Function to calculate average time
-    static void run(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes) {
+    static void run(List<Main.Process> processes, int amountProcesses, List<Integer> arrivaltimes, List<Integer> servicetimes,  List<Integer> servicetimesPercentiles) {
         int waitingtimes[] = new int[amountProcesses];
         int[] turnaroundtimes = new int[amountProcesses];
         float[] normalizedTurnaroundtimes = new float[amountProcesses];
@@ -233,7 +275,12 @@ class FCFS {
         System.out.printf("Average TAT: %.2f %n", averageTurnaroundtime);
         System.out.printf("Average Normalized TAT: %.2f %n",averageNormalizedTurnaroundtime);
         System.out.printf("Average Waitingtime: %.2f %n", averageWaitingtime);
+
+        // calculate the percentiles
+        Collections.sort(servicetimes);
+
+        // allemaal optellen en door 100 delen en dan in de array steken..
+        stPercentile20k(servicetimes, servicetimesPercentiles);
+        System.out.println(servicetimesPercentiles);
     }
 }
-
-
